@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
+import { WorkflowModule } from './workflows/worflow.module.js';
 
 
 @Module({
-  imports: [],
+  imports: [WorkflowModule],
   controllers: [],
   providers: [],
 })
