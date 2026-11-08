@@ -8,7 +8,8 @@ import { StepSchema } from './entities/step.entity.js';
 @Module({
     imports:[MikroOrmModule.forFeature([WorkFlowSchema, StepSchema])],
     controllers:[WorkflowController],
-    providers:[WorkflowService]
+    providers:[WorkflowService],
+    exports: [WorkflowService]
 })
 
 export class WorkflowModule{}

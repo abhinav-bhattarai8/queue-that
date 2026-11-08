@@ -1,4 +1,4 @@
-import {IsString, IsNotEmpty, IsObject, IsOptional} from 'class-validator';
+import {IsString, IsNotEmpty, IsObject, IsOptional, IsBoolean} from 'class-validator';
 
 export class CreateWorkflowDto {
     @IsString()
@@ -8,6 +8,10 @@ export class CreateWorkflowDto {
     @IsString()
     @IsOptional()
     description?: string;
+
+    @IsBoolean()
+    @IsOptional()
+    enabled?: boolean;
 
     @IsString() 
     @IsNotEmpty()

@@ -11,7 +11,7 @@ export const WorkFlowSchema = defineEntity({
         triggerType: p.string(),
         triggerConfig: p.json().nullable(),
         webhookId: p.string().nullable().unique(),
-        steps: () => p.oneToMany(() => StepSchema).mappedBy('workflow')
+        steps: () => p.oneToMany(StepSchema).mappedBy('workflow')
     }
 });
 
