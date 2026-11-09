@@ -1,7 +1,7 @@
 import {defineEntity, type InferEntity, p} from '@mikro-orm/core';
 import { StepSchema } from './step.entity.js';
 
-export const WorkFlowSchema = defineEntity({
+export const WorkflowSchema = defineEntity({
     name: 'workflow',
     properties: {
         id: p.integer().primary(),
@@ -15,4 +15,4 @@ export const WorkFlowSchema = defineEntity({
     }
 });
 
-export type IWorkFlow = InferEntity<typeof WorkFlowSchema>;
+export type IWorkflow = InferEntity<typeof WorkflowSchema>;
