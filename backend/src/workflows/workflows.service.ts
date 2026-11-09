@@ -1,30 +1,25 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import {InjectRepository} from '@mikro-orm/nestjs'
 import {CreateWorkflowDto} from './dto/create-workflow.dto.js'
-import { IWorkFlow, WorkFlowSchema } from "./entities/workflow.entities.js";
-import { EntityRepository, NotFoundError, wrap } from "@mikro-orm/core";
+import { IWorkflow, WorkflowSchema } from "./entities/workflow.entities.js";
+import { EntityManager, EntityRepository, NotFoundError, wrap } from "@mikro-orm/core";
 import crypto from 'crypto';
 import { UpdateWorkflowDto } from "./dto/update-workflow.dto.js";
-import { emitKeypressEvents } from "readline";
 
 @Injectable()
 export class WorkflowService {
     constructor(
-        @InjectRepository(WorkFlowSchema) 
-        private readonly workflowRepository: EntityRepository<IWorkFlow>
+        @InjectRepository(WorkflowSchema) 
+        private readonly workflowRepository: EntityRepository<IWorkflow>,
+        private readonly em:EntityManager
     ){}
     
     async createWorkflow(dto: CreateWorkflowDto) {
-        const workflow = this.workflowRepository.create({
-            name: dto.name,
-            description: dto.description ?? null,
-            enabled: true,
-            triggerType: dto.triggerType,
-            triggerConfig: dto.triggerConfig ?? null,
-            webhookId: dto.triggerType === 'webhook' ? this.generateUniqueId() : null
-        });
+        const em = this.em.fork();
+        
+        const workflow = em.create(WorkflowSchema, {...dto, enabled:dto.enabled??true} as any);
 
-        await this.workflowRepository.getEntityManager().persist(workflow).flush();
+        await em.persist(workflow).flush();
 
         return workflow;
    }
@@ -37,40 +32,41 @@ export class WorkflowService {
     return await this.workflowRepository.findAll({populate: ['steps']});
    }
 
-   async findWorkflowById(id: string):Promise<IWorkFlow | null> {
+   async findWorkflowById(id: string, customEm?: EntityManager ):Promise<IWorkflow> {
     const numericId = parseInt(id,10);
 
     if(isNaN(numericId)) {
         throw new BadRequestException('Invalid workflow ID format');
     }
 
-    return await this.workflowRepository.findOne({id: numericId});
+    const em = customEm ?? this.em.fork();
+    const workflow = await em.findOne(WorkflowSchema, {id: numericId});
+    
+    if (!workflow) {
+        throw new NotFoundException('Requested workflow not found');
+    }
+    return workflow;
    }
 
    async updateWorkflow(id: string, updateDto:UpdateWorkflowDto) {
-     const workflow = await this.findWorkflowById(id);
+     const em = this.em.fork();
+     const workflow = await this.findWorkflowById(id, em);
      
-     if(!workflow) {
-        throw new NotFoundError('Requested worflow not found');
-     }
-
      wrap(workflow).assign(updateDto as any);
 
-     await this.workflowRepository.getEntityManager().flush();
+     await em.flush();
 
      return workflow;
    }
 
    async removeWorkflow(id: string) {
-     const workflow = await this.findWorkflowById(id);
+     const em = this.em.fork();
+     const workflow = await this.findWorkflowById(id, em);
      
-     if(!workflow) {
-        throw new NotFoundError('Requested worflow not found');
-     }
+     em.remove(workflow);
 
-     this.workflowRepository.getEntityManager().remove(workflow);
-
-     await this.workflowRepository.getEntityManager().flush();
+     await em.flush();
+     return { message: 'Workflow deleted successfully' };
     
    }
 }

@@ -29,8 +29,7 @@ export class WorkflowController {
 
     @Delete(':id')
     async delete(@Param('id') id:string) {
-        await this.workflowService.removeWorkflow(id);
-        return {'message': 'Workflow successfully deleted'};
+        return await this.workflowService.removeWorkflow(id);
     } 
 
 }
