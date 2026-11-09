@@ -1,18 +1,4 @@
-import { IsOptional, IsNumber, IsString, IsObject } from "class-validator";
+import {PartialType} from '@nestjs/mapped-types';
+import {CreateStepDto} from './create-step.dto.js';
 
-export class UpdateStepDto {
-
-    @IsNumber()
-    @IsOptional()
-    position? : number;
-
-    @IsString()
-    @IsOptional()
-    nodeType?: string;
-
-    @IsObject()
-    @IsOptional()
-    config?: Record<string, any>;
-
-
-}
+export class UpdateStepDto extends PartialType(CreateStepDto) {}

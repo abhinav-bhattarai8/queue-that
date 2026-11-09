@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import {InjectRepository} from '@mikro-orm/nestjs'
 import {CreateWorkflowDto} from './dto/create-workflow.dto.js'
 import { IWorkflow, WorkflowSchema } from "./entities/workflow.entities.js";
-import { EntityManager, EntityRepository, NotFoundError, wrap } from "@mikro-orm/core";
+import { EntityManager, EntityRepository} from "@mikro-orm/core";
 import crypto from 'crypto';
 import { UpdateWorkflowDto } from "./dto/update-workflow.dto.js";
 
@@ -52,7 +52,7 @@ export class WorkflowService {
      const em = this.em.fork();
      const workflow = await this.findWorkflowById(id, em);
      
-     wrap(workflow).assign(updateDto as any);
+     em.assign(workflow, updateDto as any);
 
      await em.flush();
 
@@ -62,7 +62,8 @@ export class WorkflowService {
    async removeWorkflow(id: string) {
      const em = this.em.fork();
      const workflow = await this.findWorkflowById(id, em);
-     
+     await em.populate(workflow, ['steps']);
+     em.remove(workflow.steps);
      em.remove(workflow);
 
      await em.flush();

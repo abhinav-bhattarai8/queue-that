@@ -34,7 +34,7 @@ export class StepService {
     async createStep(workflowId: string, createStepDto: CreateStepDto) {
 
         const em = this.em.fork();
-        const workflow = await this.findWorkflow(workflowId);
+        const workflow = await this.findWorkflow(workflowId, em);
 
         const step = em.create(StepSchema, {...createStepDto, 
             config: createStepDto.config ?? null, workflow} as any);
@@ -74,7 +74,7 @@ export class StepService {
 
     async removeStep(workflowId: string, stepId: string ) {
         const em = this.em.fork();
-        const step = this.getStepById(workflowId, stepId, em);
+        const step = await this.getStepById(workflowId, stepId, em);
 
         em.remove(step);
         await em.flush();
@@ -85,9 +85,9 @@ export class StepService {
 
     async updateStep(workflowId: string, stepId: string, updateStepDto: UpdateStepDto) {
         const em = this.em.fork();
-        const step = this.getStepById(workflowId, stepId, em);
+        const step = await this.getStepById(workflowId, stepId, em);
 
-        wrap(step).assign(updateStepDto as any);
+        em.assign(step,updateStepDto as any);
         await em.flush();
         return step;
     }
