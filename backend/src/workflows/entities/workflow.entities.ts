@@ -1,6 +1,13 @@
 import {defineEntity, type InferEntity, p} from '@mikro-orm/core';
 import { StepSchema } from './step.entity.js';
 
+export type TriggerType = 'webhook' | 'cron';
+
+export interface CronTriggerConfig {
+    cron: string;
+    lastRunAt?: string;
+}
+
 export const WorkflowSchema = defineEntity({
     name: 'workflow',
     properties: {
@@ -8,8 +15,9 @@ export const WorkflowSchema = defineEntity({
         name: p.string(),
         description: p.string().nullable(),
         enabled: p.boolean(),
-        triggerType: p.string(),
-        triggerConfig: p.json().nullable(),
+        triggerType: p.string().$type<TriggerType>(),
+        triggerConfig: p.json<CronTriggerConfig | Record<string, unknown>>().nullable(),
+        lastTriggeredAt: p.datetime().nullable(),
         webhookId: p.string().nullable().unique(),
         steps: () => p.oneToMany(StepSchema).mappedBy('workflow')
     }
