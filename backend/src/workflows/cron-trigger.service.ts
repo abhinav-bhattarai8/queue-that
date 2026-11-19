@@ -20,8 +20,9 @@ export class CronTriggerService {
 
         this.isTickRunning = true;
         try {
+            const em = this.em.fork();
             const now = new Date();
-            const workflows = await this.em.find(WorkflowSchema, {
+            const workflows = await em.find(WorkflowSchema, {
                 enabled:true, triggerType: 'cron'
             });
 
@@ -48,7 +49,7 @@ export class CronTriggerService {
                 const triggeredAtIso = now.toISOString();
                 workflow.lastTriggeredAt = now;
                 workflow.triggerConfig = {...config, lastRunAt: triggeredAtIso};
-                await this.em.flush();
+                await em.flush();
 
                 await this.executionService.runWorkflow(workflow.id.toString());
             }
