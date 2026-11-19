@@ -13,6 +13,20 @@ export default defineConfig({
     driverOptions: {
         ssl: {rejectUnauthorized: false}
     },
+    schemaGenerator: {
+    ignoreSchema: [
+      'auth',
+      'storage',
+      'realtime',
+      'vault',
+      'extensions',
+      'graphql',
+      'graphql_public',
+      'pgbouncer',
+      'supabase_functions',
+      'supabase_migrations',
+      '_realtime',],
+    },
     extensions: [Migrator],
     migrations: {
         path: './dist/migrations',
